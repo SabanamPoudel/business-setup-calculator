@@ -1,0 +1,2785 @@
+<!-- 
+WORDPRESS ELEMENTOR HTML WIDGET VERSION
+
+INSTRUCTIONS:
+1. Open WordPress Elementor page editor
+2. Drag the HTML widget to your page
+3. Copy ALL content from this file 
+4. Paste into the HTML widget code editor
+5. Save and preview
+
+DEBUGGING:
+- Press F12 to open browser console
+- Look for "Initializing calculator..." message
+- Should show "Found steps: 7"
+- When clicking Next, should show "Next button clicked" logs
+- If you see errors, report them back
+
+This version is ready for Elementor - no DOCTYPE, html, head, or body tags.
+EmailJS is configured to send to: info@bizemirate.com
+-->
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+            background: #e9effb;
+            min-height: 100vh;
+        }
+
+        .calculator-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: #e9effb;
+            min-height: 100vh;
+        }
+
+        .header {
+            background: white;
+            padding: 30px 60px;
+            border-bottom: 2px solid #e9effb;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: #002a6f;
+        }
+
+        .logo-subtitle {
+            font-size: 11px;
+            color: #002a6f;
+            letter-spacing: 1.5px;
+            margin-top: 2px;
+        }
+
+        .progress-section {
+            background: #e9effb;
+            padding: 20px 60px;
+            border-bottom: 2px solid #d4e0f7;
+        }
+
+        .step-indicator {
+            font-size: 14px;
+            color: #374151;
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+
+        .progress-bar {
+            background: #e9effb;
+            height: 8px;
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 1px 3px rgba(0, 42, 111, 0.1);
+        }
+
+        .progress-fill {
+            background: linear-gradient(90deg, #002a6f 0%, #c40f0e 100%);
+            height: 100%;
+            transition: width 0.4s ease;
+            border-radius: 10px;
+            box-shadow: 0 1px 3px rgba(0, 42, 111, 0.3);
+        }
+
+        .form-container {
+            padding: 60px;
+            min-height: calc(100vh - 200px);
+        }
+
+        .step {
+            display: none !important;
+        }
+
+        .step.active {
+            display: grid !important;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            align-items: stretch;
+            animation: fadeIn 0.6s ease;
+        }
+
+        /* Step 7 appears as a full-page overlay */
+        .step[data-step="7"].active {
+            display: block !important;
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100vw !important;
+            height: 100vh !important;
+            overflow-y: auto !important;
+            z-index: 999999 !important;
+            background: #e9effb !important;
+            padding: 40px 20px !important;
+            box-sizing: border-box !important;
+            animation: fadeIn 0.5s ease !important;
+        }
+
+        .step[data-step="7"].active .step-fullwidth {
+            max-width: 860px;
+            margin: 0 auto;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .step-left {
+            padding-right: 40px;
+        }
+
+        .step-right {
+            background: linear-gradient(135deg, #002a6f 0%, #c40f0e 100%);
+            padding: 36px 28px;
+            border-radius: 20px;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 10px 40px rgba(0, 42, 111, 0.15);
+        }
+
+        .step h2 {
+            font-size: 48px;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #002a6f 0%, #c40f0e 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .step-description {
+            color: #6b7280;
+            margin-bottom: 40px;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .step-image {
+            width: 80%;
+            border-radius: 16px;
+            margin-top: 12px;
+            box-shadow: 0 10px 40px rgba(0, 42, 111, 0.15);
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+        
+        .form-group + .info-text {
+            margin-top: -12px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: white;
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="tel"],
+        input[type="number"],
+        select {
+            width: 100%;
+            padding: 10px 14px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            font-size: 13px;
+            background: white;
+            color: #374151;
+            transition: all 0.3s;
+        }
+
+        input::placeholder {
+            color: #9ca3af;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: white;
+            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.4), 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .phone-input-wrapper {
+            display: flex;
+            gap: 10px;
+        }
+
+        .country-select {
+            width: 140px;
+            flex-shrink: 0;
+        }
+
+        .phone-input {
+            flex: 1;
+        }
+
+        .phone-input {
+            flex: 1;
+        }
+
+        .alternate-phone-wrapper {
+            display: none;
+            margin-top: 18px;
+            animation: slideDown 0.3s ease;
+        }
+
+        .alternate-phone-wrapper.show {
+            display: block;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .consent-wrapper {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-top: 18px;
+        }
+
+        .consent-wrapper input[type="checkbox"] {
+            margin-top: 4px;
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+            cursor: pointer;
+        }
+
+        .consent-text {
+            font-size: 12px;
+            color: white;
+            line-height: 1.5;
+            opacity: 0.95;
+        }
+
+        .consent-text a {
+            color: white;
+            text-decoration: underline;
+        }
+
+        .radio-group,
+        .checkbox-group {
+            display: grid;
+            gap: 16px;
+        }
+
+        .radio-option,
+        .checkbox-option {
+            position: relative;
+            padding: 20px 24px;
+            background: white;
+            border: 2px solid #e9effb;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0, 42, 111, 0.04);
+        }
+
+        .radio-option:hover,
+        .checkbox-option:hover {
+            border-color: #c40f0e;
+            box-shadow: 0 4px 16px rgba(196, 15, 14, 0.15);
+            transform: translateY(-2px);
+        }
+
+        .radio-option input[type="radio"],
+        .checkbox-option input[type="checkbox"] {
+            margin-right: 14px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .radio-option.selected,
+        .checkbox-option.selected {
+            border-color: #c40f0e;
+            background: #fff0f0;
+        }
+
+        .option-label {
+            font-weight: 600;
+            color: #1f2937;
+            font-size: 15px;
+        }
+
+        .option-description {
+            font-size: 13px;
+            color: #6b7280;
+            margin-top: 6px;
+            line-height: 1.5;
+        }
+
+        .option-price {
+            float: right;
+            font-weight: 700;
+            color: #c40f0e;
+            font-size: 16px;
+        }
+
+        .activity-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .activity-pill {
+            padding: 10px 22px;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            border-radius: 50px;
+            background: transparent;
+            color: white;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .activity-pill:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: white;
+            transform: translateY(-2px);
+        }
+
+        .activity-pill.selected {
+            background: white;
+            color: #c40f0e;
+            font-weight: 600;
+        }
+
+        .add-activity-section {
+            margin-bottom: 18px;
+        }
+
+        .add-activity-label {
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .add-activity-input-wrapper {
+            position: relative;
+            width: 100%;
+        }
+
+        .add-activity-input {
+            width: 100%;
+            padding: 12px 60px 12px 16px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            background: white;
+            color: #374151;
+            box-sizing: border-box;
+        }
+
+        .add-activity-btn {
+            position: absolute;
+            right: 6px;
+            top: 50%;
+            margin-top: -20px;
+            width: 40px;
+            height: 40px;
+            min-width: 40px;
+            min-height: 40px;
+            border-radius: 50%;
+            background: transparent;
+            border: none;
+            color: #000000;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .add-activity-btn:hover {
+            opacity: 0.7;
+        }
+
+        .activity-pill.custom {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding-right: 12px;
+        }
+
+        .delete-activity {
+            background: none;
+            border: none;
+            color: inherit;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 0;
+            width: 20px;
+            height: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            line-height: 1;
+            box-shadow: none;
+        }
+
+        .delete-activity:hover {
+            background: none;
+            box-shadow: none;
+        }
+
+        .activity-pill.selected .delete-activity:hover {
+            background: none;
+            box-shadow: none;
+        }
+
+        .custom-activity-section {
+            margin-bottom: 18px;
+        }
+
+        .custom-activity-label {
+            color: white;
+            font-size: 14px;
+            margin-bottom: 10px;
+            display: block;
+        }
+
+        .custom-activity-textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            background: white;
+            color: #374151;
+            resize: vertical;
+            min-height: 80px;
+            font-family: inherit;
+        }
+
+        .info-text {
+            color: white;
+            font-size: 13px;
+            line-height: 1.5;
+            margin-bottom: 18px;
+            margin-top: 0;
+        }
+
+        .license-label {
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 14px;
+            display: block;
+        }
+
+        .license-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 28px;
+        }
+
+        .license-option {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 16px 20px;
+            background: white;
+            border: 2px solid #e9effb;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 8px rgba(0, 42, 111, 0.04);
+        }
+
+        .license-option:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0, 42, 111, 0.12);
+            border-color: #002a6f;
+        }
+
+        .license-option input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            flex-shrink: 0;
+            accent-color: #002a6f;
+        }
+
+        .license-option-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .license-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .license-price {
+            font-size: 13px;
+            color: #6b7280;
+        }
+
+        .visa-label {
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        .visa-slider-container {
+            margin-bottom: 50px;
+        }
+
+        .visa-slider {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+            height: 8px;
+            border-radius: 5px;
+            background: rgba(255, 255, 255, 0.3);
+            outline: none;
+            margin-bottom: 20px;
+        }
+
+        .visa-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .visa-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: white;
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        .visa-labels {
+            display: flex;
+            justify-content: space-between;
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 0 5px;
+        }
+
+        .visa-labels span {
+            text-align: center;
+            min-width: 30px;
+        }
+
+        .services-list {
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            margin-bottom: 28px;
+        }
+
+        .service-item {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .service-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .service-check {
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .service-info {
+            flex: 1;
+        }
+
+        .service-title {
+            color: white;
+            font-size: 15px;
+            font-weight: 700;
+            margin: 0 0 6px 0;
+        }
+
+        .service-desc {
+            color: white;
+            font-size: 12px;
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        .service-buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .service-btn {
+            flex: 1;
+            padding: 11px 18px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            background: white;
+            color: #1f2937;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .service-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(255, 255, 255, 0.2);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .service-btn.active {
+            background: white;
+            color: #1f2937;
+            border-color: white;
+        }
+
+        .service-checkbox {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #002a6f;
+            pointer-events: none;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 28px;
+        }
+
+        button {
+            padding: 12px 32px;
+            border: none;
+            border-radius: 50px !important;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 110px;
+        }
+
+        .btn-next,
+        .btn-submit {
+            background: #002a6f;
+            color: white;
+            border-radius: 50px !important;
+        }
+
+        .btn-next:hover,
+        .btn-submit:hover {
+            background: #001a4a;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 42, 111, 0.4);
+        }
+
+        .btn-prev {
+            background: white;
+            color: #374151;
+            border: 2px solid #e9effb;
+            border-radius: 50px !important;
+        }
+
+        .btn-prev:hover {
+            background: #e9effb;
+            border-color: #d4e0f7;
+            transform: translateY(-2px);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .summary-section {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            border: 2px solid #e9effb;
+            box-shadow: 0 2px 8px rgba(0, 42, 111, 0.04);
+        }
+
+        .summary-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 14px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .summary-item:last-child {
+            border-bottom: none;
+        }
+
+        .summary-label {
+            color: #6b7280;
+            font-size: 15px;
+        }
+
+        .summary-value {
+            font-weight: 600;
+            color: #1f2937;
+            font-size: 15px;
+        }
+
+        .total-cost {
+            background: linear-gradient(135deg, #002a6f 0%, #c40f0e 100%);
+            color: white;
+            padding: 32px;
+            border-radius: 16px;
+            text-align: center;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 40px rgba(0, 42, 111, 0.2);
+        }
+
+        .total-cost h3 {
+            font-size: 16px;
+            margin-bottom: 12px;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+
+        .total-cost .amount {
+            font-size: 56px;
+            font-weight: 800;
+        }
+
+        /* Step 7 Full Width Layout */
+        .step-fullwidth {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            text-align: center;
+        }
+
+        .step-fullwidth .button-group {
+            justify-content: center;
+            gap: 16px;
+        }
+
+        /* License Cost Card */
+        .license-cost-card {
+            background: linear-gradient(135deg, #002a6f 0%, #c40f0e 100%);
+            border-radius: 24px;
+            padding: 36px 28px;
+            text-align: center;
+            margin-bottom: 28px;
+            box-shadow: 0 10px 40px rgba(0, 42, 111, 0.2);
+        }
+
+        .cost-label {
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            opacity: 0.95;
+        }
+
+        .cost-amount {
+            color: white;
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .cost-disclaimer {
+            color: white;
+            font-size: 13px;
+            opacity: 0.9;
+        }
+
+        /* Info Grid */
+        .info-grid {
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 24px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 24px;
+            box-shadow: 0 4px 16px rgba(0, 42, 111, 0.08);
+            border: 2px solid #e9effb;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .info-item.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .info-item.full-width .info-value {
+            margin-top: 4px;
+        }
+
+        .info-label {
+            color: #6b7280;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .info-value {
+            color: #1f2937;
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        /* Summary Activity Pills */
+        .summary-activity-pills {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .summary-activity-pill {
+            padding: 8px 18px;
+            background: #e9effb;
+            color: #1f2937;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        /* Add-ons Section */
+        .addons-section {
+            background: white;
+            border: 2px solid #e9effb;
+            border-radius: 12px;
+            margin-bottom: 24px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0, 42, 111, 0.04);
+        }
+
+        .addons-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 24px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #1f2937;
+        }
+
+        .addons-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .addons-cost {
+            color: #c40f0e;
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .addons-toggle {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #1f2937;
+            cursor: pointer;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s;
+        }
+
+        .addons-toggle.expanded {
+            transform: rotate(45deg);
+        }
+
+        .addons-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .addons-content.expanded {
+            max-height: 500px;
+            padding: 0 24px 24px 24px;
+        }
+
+        #addonsDetails .addon-item {
+            padding: 12px 0;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #addonsDetails .addon-item:last-child {
+            border-bottom: none;
+        }
+
+        .addon-subtotal {
+            padding: 16px 0 0 0;
+            margin-top: 12px;
+            border-top: 2px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .addon-subtotal .addon-name {
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        .addon-subtotal .addon-price {
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        .addon-name {
+            color: #1f2937;
+            font-size: 14px;
+        }
+
+        .addon-price {
+            color: #c40f0e;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        /* Grand Total */
+        .grand-total {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 24px 0;
+            margin-bottom: 32px;
+        }
+
+        .grand-label {
+            font-size: 18px;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .grand-amount {
+            font-size: 28px;
+            font-weight: 800;
+            color: #c40f0e;
+        }
+
+        /* Features Row */
+        .features-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        .feature-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            text-align: center;
+        }
+
+        .feature-icon {
+            font-size: 28px;
+        }
+
+        .feature-text {
+            font-size: 12px;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        /* Thank You Screen - Modal Popup */
+        .thank-you-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100vw;
+            height: 100vh;
+            align-items: center;
+            justify-content: center;
+            z-index: 99999999;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .thank-you-container.show {
+            display: flex !important;
+        }
+
+        .thank-you-content {
+            background: white;
+            border-radius: 16px;
+            padding: 36px 32px 28px;
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.18);
+            max-width: 380px;
+            width: 100%;
+            text-align: center;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-16px) scale(0.97); }
+            to   { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .thank-you-icon {
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 16px;
+            background: linear-gradient(135deg, #002a6f, #c40f0e);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            color: white;
+        }
+
+        .thank-you-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #002a6f;
+            margin: 0 0 8px;
+        }
+
+        .thank-you-message {
+            font-size: 14px;
+            color: #6b7280;
+            line-height: 1.55;
+            margin: 0 0 20px;
+        }
+
+        .thank-you-info {
+            background: #f0f5ff;
+            border-radius: 10px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+        }
+
+        .thank-you-info p {
+            font-size: 14px;
+            color: #374151;
+            margin: 0;
+        }
+
+        .thank-you-info strong {
+            color: #c40f0e;
+            font-size: 18px;
+        }
+
+        .thank-you-btn {
+            padding: 12px 40px;
+            background: #002a6f;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .thank-you-btn:hover {
+            background: #c40f0e;
+        }
+
+        .error-message {
+            color: #ef4444;
+            font-size: 13px;
+            margin-top: 6px;
+            display: none;
+        }
+
+        @media (max-width: 1024px) {
+            .step.active {
+                grid-template-columns: 1fr;
+                gap: 40px;
+            }
+
+            .step-left {
+                padding-right: 0;
+            }
+
+            .form-container {
+                padding: 40px;
+            }
+
+            .header {
+                padding: 24px 40px;
+            }
+
+            .progress-section {
+                padding: 16px 40px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .form-container {
+                padding: 24px;
+            }
+
+            .header {
+                padding: 20px 24px;
+            }
+
+            .progress-section {
+                padding: 12px 24px;
+            }
+
+            .step h2 {
+                font-size: 36px;
+            }
+
+            .step-right {
+                padding: 24px 20px;
+            }
+
+            .total-cost .amount {
+                font-size: 42px;
+            }
+
+            .phone-input-wrapper {
+                flex-direction: column;
+            }
+
+            .country-select {
+                width: 100%;
+            }
+
+            /* Step 7 Responsive */
+            .step-fullwidth {
+                padding: 20px 0;
+            }
+
+            .cost-amount {
+                font-size: 48px;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+                padding: 24px;
+            }
+
+            .features-row {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+            }
+
+            .grand-amount {
+                font-size: 24px;
+            }
+
+            .license-cost-card {
+                padding: 32px 24px;
+            }
+
+            /* Thank You Responsive */
+            .thank-you-content {
+                padding: 40px 24px;
+            }
+
+            .thank-you-title {
+                font-size: 24px;
+            }
+
+            .thank-you-icon {
+                width: 60px;
+                height: 60px;
+                font-size: 36px;
+            }
+        }
+    </style>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script type="text/javascript">
+        (function(){
+            // EmailJS credentials configured
+            emailjs.init({
+                publicKey: "2Ar6TSoG43Fr0cle3",
+            });
+        })();
+    </script>
+</head>
+<body>
+    <div class="calculator-container" id="bizCalcContainer">
+        <div class="progress-section">
+            <div class="step-indicator" id="stepIndicator">Step 1 of 7 - Basic Details</div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressBar"></div>
+            </div>
+        </div>
+
+        <div class="form-container">
+            <form id="costCalculatorForm">
+                
+                <!-- Step 1: Basic Details -->
+                <div class="step active" data-step="1">
+                    <div class="step-left">
+                        <h2>Get an estimate of your setup costs.</h2>
+                        <p class="step-description">Begin your journey by filling in the details below. Our precise cost calculator ensures you pay only for what your business needs.</p>
+                        <img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=600&h=400&fit=crop" alt="Business professionals" class="step-image">
+                    </div>
+                    
+                    <div class="step-right">
+                        <div class="form-group">
+                            <label for="fullName">Your Full Name</label>
+                            <input type="text" id="fullName" name="fullName" placeholder="Name" required>
+                            <div class="error-message" id="fullNameError">Please enter your full name</div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone">Your Phone Number</label>
+                            <div class="phone-input-wrapper">
+                                <select class="country-select" id="countryCode">
+                                    <option value="+93">🇦🇫 Afghanistan +93</option>
+                                    <option value="+358">🇦🇽 Åland Islands +358</option>
+                                    <option value="+355">🇦🇱 Albania +355</option>
+                                    <option value="+213">🇩🇿 Algeria +213</option>
+                                    <option value="+1684">🇦🇸 American Samoa +1684</option>
+                                    <option value="+376">🇦🇩 Andorra +376</option>
+                                    <option value="+244">🇦🇴 Angola +244</option>
+                                    <option value="+1264">🇦🇮 Anguilla +1264</option>
+                                    <option value="+672">🇦🇶 Antarctica +672</option>
+                                    <option value="+1268">🇦🇬 Antigua and Barbuda +1268</option>
+                                    <option value="+54">🇦🇷 Argentina +54</option>
+                                    <option value="+374">🇦🇲 Armenia +374</option>
+                                    <option value="+297">🇦🇼 Aruba +297</option>
+                                    <option value="+61">🇦🇺 Australia +61</option>
+                                    <option value="+43">🇦🇹 Austria +43</option>
+                                    <option value="+994">🇦🇿 Azerbaijan +994</option>
+                                    <option value="+1242">🇧🇸 Bahamas +1242</option>
+                                    <option value="+973">🇧🇭 Bahrain +973</option>
+                                    <option value="+880">🇧🇩 Bangladesh +880</option>
+                                    <option value="+1246">🇧🇧 Barbados +1246</option>
+                                    <option value="+375">🇧🇾 Belarus +375</option>
+                                    <option value="+32">🇧🇪 Belgium +32</option>
+                                    <option value="+501">🇧🇿 Belize +501</option>
+                                    <option value="+229">🇧🇯 Benin +229</option>
+                                    <option value="+1441">🇧🇲 Bermuda +1441</option>
+                                    <option value="+975">🇧🇹 Bhutan +975</option>
+                                    <option value="+591">🇧🇴 Bolivia +591</option>
+                                    <option value="+387">🇧🇦 Bosnia and Herzegovina +387</option>
+                                    <option value="+267">🇧🇼 Botswana +267</option>
+                                    <option value="+55">🇧🇷 Brazil +55</option>
+                                    <option value="+246">🇮🇴 British Indian Ocean Territory +246</option>
+                                    <option value="+673">🇧🇳 Brunei +673</option>
+                                    <option value="+359">🇧🇬 Bulgaria +359</option>
+                                    <option value="+226">🇧🇫 Burkina Faso +226</option>
+                                    <option value="+257">🇧🇮 Burundi +257</option>
+                                    <option value="+855">🇰🇭 Cambodia +855</option>
+                                    <option value="+237">🇨🇲 Cameroon +237</option>
+                                    <option value="+1">🇨🇦 Canada +1</option>
+                                    <option value="+238">🇨🇻 Cape Verde +238</option>
+                                    <option value="+1345">🇰🇾 Cayman Islands +1345</option>
+                                    <option value="+236">🇨🇫 Central African Republic +236</option>
+                                    <option value="+235">🇹🇩 Chad +235</option>
+                                    <option value="+56">🇨🇱 Chile +56</option>
+                                    <option value="+86">🇨🇳 China +86</option>
+                                    <option value="+61">🇨🇽 Christmas Island +61</option>
+                                    <option value="+61">🇨🇨 Cocos Islands +61</option>
+                                    <option value="+57">🇨🇴 Colombia +57</option>
+                                    <option value="+269">🇰🇲 Comoros +269</option>
+                                    <option value="+242">🇨🇬 Congo +242</option>
+                                    <option value="+243">🇨🇩 Congo (DRC) +243</option>
+                                    <option value="+682">🇨🇰 Cook Islands +682</option>
+                                    <option value="+506">🇨🇷 Costa Rica +506</option>
+                                    <option value="+225">🇨🇮 Côte d'Ivoire +225</option>
+                                    <option value="+385">🇭🇷 Croatia +385</option>
+                                    <option value="+53">🇨🇺 Cuba +53</option>
+                                    <option value="+599">🇨🇼 Curaçao +599</option>
+                                    <option value="+357">🇨🇾 Cyprus +357</option>
+                                    <option value="+420">🇨🇿 Czech Republic +420</option>
+                                    <option value="+45">🇩🇰 Denmark +45</option>
+                                    <option value="+253">🇩🇯 Djibouti +253</option>
+                                    <option value="+1767">🇩🇲 Dominica +1767</option>
+                                    <option value="+1809">🇩🇴 Dominican Republic +1809</option>
+                                    <option value="+593">🇪🇨 Ecuador +593</option>
+                                    <option value="+20">🇪🇬 Egypt +20</option>
+                                    <option value="+503">🇸🇻 El Salvador +503</option>
+                                    <option value="+240">🇬🇶 Equatorial Guinea +240</option>
+                                    <option value="+291">🇪🇷 Eritrea +291</option>
+                                    <option value="+372">🇪🇪 Estonia +372</option>
+                                    <option value="+251">🇪🇹 Ethiopia +251</option>
+                                    <option value="+500">🇫🇰 Falkland Islands +500</option>
+                                    <option value="+298">🇫🇴 Faroe Islands +298</option>
+                                    <option value="+679">🇫🇯 Fiji +679</option>
+                                    <option value="+358">🇫🇮 Finland +358</option>
+                                    <option value="+33">🇫🇷 France +33</option>
+                                    <option value="+594">🇬🇫 French Guiana +594</option>
+                                    <option value="+689">🇵🇫 French Polynesia +689</option>
+                                    <option value="+241">🇬🇦 Gabon +241</option>
+                                    <option value="+220">🇬🇲 Gambia +220</option>
+                                    <option value="+995">🇬🇪 Georgia +995</option>
+                                    <option value="+49">🇩🇪 Germany +49</option>
+                                    <option value="+233">🇬🇭 Ghana +233</option>
+                                    <option value="+350">🇬🇮 Gibraltar +350</option>
+                                    <option value="+30">🇬🇷 Greece +30</option>
+                                    <option value="+299">🇬🇱 Greenland +299</option>
+                                    <option value="+1473">🇬🇩 Grenada +1473</option>
+                                    <option value="+590">🇬🇵 Guadeloupe +590</option>
+                                    <option value="+1671">🇬🇺 Guam +1671</option>
+                                    <option value="+502">🇬🇹 Guatemala +502</option>
+                                    <option value="+44">🇬🇬 Guernsey +44</option>
+                                    <option value="+224">🇬🇳 Guinea +224</option>
+                                    <option value="+245">🇬🇼 Guinea-Bissau +245</option>
+                                    <option value="+592">🇬🇾 Guyana +592</option>
+                                    <option value="+509">🇭🇹 Haiti +509</option>
+                                    <option value="+504">🇭🇳 Honduras +504</option>
+                                    <option value="+852">🇭🇰 Hong Kong +852</option>
+                                    <option value="+36">🇭🇺 Hungary +36</option>
+                                    <option value="+354">🇮🇸 Iceland +354</option>
+                                    <option value="+91">🇮🇳 India +91</option>
+                                    <option value="+62">🇮🇩 Indonesia +62</option>
+                                    <option value="+98">🇮🇷 Iran +98</option>
+                                    <option value="+964">🇮🇶 Iraq +964</option>
+                                    <option value="+353">🇮🇪 Ireland +353</option>
+                                    <option value="+44">🇮🇲 Isle of Man +44</option>
+                                    <option value="+972">🇮🇱 Israel +972</option>
+                                    <option value="+39">🇮🇹 Italy +39</option>
+                                    <option value="+1876">🇯🇲 Jamaica +1876</option>
+                                    <option value="+81">🇯🇵 Japan +81</option>
+                                    <option value="+44">🇯🇪 Jersey +44</option>
+                                    <option value="+962">🇯🇴 Jordan +962</option>
+                                    <option value="+7">🇰🇿 Kazakhstan +7</option>
+                                    <option value="+254">🇰🇪 Kenya +254</option>
+                                    <option value="+686">🇰🇮 Kiribati +686</option>
+                                    <option value="+383">🇽🇰 Kosovo +383</option>
+                                    <option value="+965">🇰🇼 Kuwait +965</option>
+                                    <option value="+996">🇰🇬 Kyrgyzstan +996</option>
+                                    <option value="+856">🇱🇦 Laos +856</option>
+                                    <option value="+371">🇱🇻 Latvia +371</option>
+                                    <option value="+961">🇱🇧 Lebanon +961</option>
+                                    <option value="+266">🇱🇸 Lesotho +266</option>
+                                    <option value="+231">🇱🇷 Liberia +231</option>
+                                    <option value="+218">🇱🇾 Libya +218</option>
+                                    <option value="+423">🇱🇮 Liechtenstein +423</option>
+                                    <option value="+370">🇱🇹 Lithuania +370</option>
+                                    <option value="+352">🇱🇺 Luxembourg +352</option>
+                                    <option value="+853">🇲🇴 Macau +853</option>
+                                    <option value="+389">🇲🇰 Macedonia +389</option>
+                                    <option value="+261">🇲🇬 Madagascar +261</option>
+                                    <option value="+265">🇲🇼 Malawi +265</option>
+                                    <option value="+60">🇲🇾 Malaysia +60</option>
+                                    <option value="+960">🇲🇻 Maldives +960</option>
+                                    <option value="+223">🇲🇱 Mali +223</option>
+                                    <option value="+356">🇲🇹 Malta +356</option>
+                                    <option value="+692">🇲🇭 Marshall Islands +692</option>
+                                    <option value="+596">🇲🇶 Martinique +596</option>
+                                    <option value="+222">🇲🇷 Mauritania +222</option>
+                                    <option value="+230">🇲🇺 Mauritius +230</option>
+                                    <option value="+262">🇾🇹 Mayotte +262</option>
+                                    <option value="+52">🇲🇽 Mexico +52</option>
+                                    <option value="+691">🇫🇲 Micronesia +691</option>
+                                    <option value="+373">🇲🇩 Moldova +373</option>
+                                    <option value="+377">🇲🇨 Monaco +377</option>
+                                    <option value="+976">🇲🇳 Mongolia +976</option>
+                                    <option value="+382">🇲🇪 Montenegro +382</option>
+                                    <option value="+1664">🇲🇸 Montserrat +1664</option>
+                                    <option value="+212">🇲🇦 Morocco +212</option>
+                                    <option value="+258">🇲🇿 Mozambique +258</option>
+                                    <option value="+95">🇲🇲 Myanmar +95</option>
+                                    <option value="+264">🇳🇦 Namibia +264</option>
+                                    <option value="+674">🇳🇷 Nauru +674</option>
+                                    <option value="+977" selected>🇳🇵 Nepal +977</option>
+                                    <option value="+31">🇳🇱 Netherlands +31</option>
+                                    <option value="+687">🇳🇨 New Caledonia +687</option>
+                                    <option value="+64">🇳🇿 New Zealand +64</option>
+                                    <option value="+505">🇳🇮 Nicaragua +505</option>
+                                    <option value="+227">🇳🇪 Niger +227</option>
+                                    <option value="+234">🇳🇬 Nigeria +234</option>
+                                    <option value="+683">🇳🇺 Niue +683</option>
+                                    <option value="+672">🇳🇫 Norfolk Island +672</option>
+                                    <option value="+850">🇰🇵 North Korea +850</option>
+                                    <option value="+1670">🇲🇵 Northern Mariana Islands +1670</option>
+                                    <option value="+47">🇳🇴 Norway +47</option>
+                                    <option value="+968">🇴🇲 Oman +968</option>
+                                    <option value="+92">🇵🇰 Pakistan +92</option>
+                                    <option value="+680">🇵🇼 Palau +680</option>
+                                    <option value="+970">🇵🇸 Palestine +970</option>
+                                    <option value="+507">🇵🇦 Panama +507</option>
+                                    <option value="+675">🇵🇬 Papua New Guinea +675</option>
+                                    <option value="+595">🇵🇾 Paraguay +595</option>
+                                    <option value="+51">🇵🇪 Peru +51</option>
+                                    <option value="+63">🇵🇭 Philippines +63</option>
+                                    <option value="+48">🇵🇱 Poland +48</option>
+                                    <option value="+351">🇵🇹 Portugal +351</option>
+                                    <option value="+1787">🇵🇷 Puerto Rico +1787</option>
+                                    <option value="+974">🇶🇦 Qatar +974</option>
+                                    <option value="+262">🇷🇪 Réunion +262</option>
+                                    <option value="+40">🇷🇴 Romania +40</option>
+                                    <option value="+7">🇷🇺 Russia +7</option>
+                                    <option value="+250">🇷🇼 Rwanda +250</option>
+                                    <option value="+590">🇧🇱 Saint Barthélemy +590</option>
+                                    <option value="+290">🇸🇭 Saint Helena +290</option>
+                                    <option value="+1869">🇰🇳 Saint Kitts and Nevis +1869</option>
+                                    <option value="+1758">🇱🇨 Saint Lucia +1758</option>
+                                    <option value="+590">🇲🇫 Saint Martin +590</option>
+                                    <option value="+508">🇵🇲 Saint Pierre and Miquelon +508</option>
+                                    <option value="+1784">🇻🇨 Saint Vincent and the Grenadines +1784</option>
+                                    <option value="+685">🇼🇸 Samoa +685</option>
+                                    <option value="+378">🇸🇲 San Marino +378</option>
+                                    <option value="+239">🇸🇹 São Tomé and Príncipe +239</option>
+                                    <option value="+966">🇸🇦 Saudi Arabia +966</option>
+                                    <option value="+221">🇸🇳 Senegal +221</option>
+                                    <option value="+381">🇷🇸 Serbia +381</option>
+                                    <option value="+248">🇸🇨 Seychelles +248</option>
+                                    <option value="+232">🇸🇱 Sierra Leone +232</option>
+                                    <option value="+65">🇸🇬 Singapore +65</option>
+                                    <option value="+1721">🇸🇽 Sint Maarten +1721</option>
+                                    <option value="+421">🇸🇰 Slovakia +421</option>
+                                    <option value="+386">🇸🇮 Slovenia +386</option>
+                                    <option value="+677">🇸🇧 Solomon Islands +677</option>
+                                    <option value="+252">🇸🇴 Somalia +252</option>
+                                    <option value="+27">🇿🇦 South Africa +27</option>
+                                    <option value="+500">🇬🇸 South Georgia +500</option>
+                                    <option value="+82">🇰🇷 South Korea +82</option>
+                                    <option value="+211">🇸🇸 South Sudan +211</option>
+                                    <option value="+34">🇪🇸 Spain +34</option>
+                                    <option value="+94">🇱🇰 Sri Lanka +94</option>
+                                    <option value="+249">🇸🇩 Sudan +249</option>
+                                    <option value="+597">🇸🇷 Suriname +597</option>
+                                    <option value="+47">🇸🇯 Svalbard and Jan Mayen +47</option>
+                                    <option value="+268">🇸🇿 Swaziland +268</option>
+                                    <option value="+46">🇸🇪 Sweden +46</option>
+                                    <option value="+41">🇨🇭 Switzerland +41</option>
+                                    <option value="+963">🇸🇾 Syria +963</option>
+                                    <option value="+886">🇹🇼 Taiwan +886</option>
+                                    <option value="+992">🇹🇯 Tajikistan +992</option>
+                                    <option value="+255">🇹🇿 Tanzania +255</option>
+                                    <option value="+66">🇹🇭 Thailand +66</option>
+                                    <option value="+670">🇹🇱 Timor-Leste +670</option>
+                                    <option value="+228">🇹🇬 Togo +228</option>
+                                    <option value="+690">🇹🇰 Tokelau +690</option>
+                                    <option value="+676">🇹🇴 Tonga +676</option>
+                                    <option value="+1868">🇹🇹 Trinidad and Tobago +1868</option>
+                                    <option value="+216">🇹🇳 Tunisia +216</option>
+                                    <option value="+90">🇹🇷 Turkey +90</option>
+                                    <option value="+993">🇹🇲 Turkmenistan +993</option>
+                                    <option value="+1649">🇹🇨 Turks and Caicos Islands +1649</option>
+                                    <option value="+688">🇹🇻 Tuvalu +688</option>
+                                    <option value="+256">🇺🇬 Uganda +256</option>
+                                    <option value="+380">🇺🇦 Ukraine +380</option>
+                                    <option value="+971">🇦🇪 United Arab Emirates +971</option>
+                                    <option value="+44">🇬🇧 United Kingdom +44</option>
+                                    <option value="+1">🇺🇸 United States +1</option>
+                                    <option value="+598">🇺🇾 Uruguay +598</option>
+                                    <option value="+998">🇺🇿 Uzbekistan +998</option>
+                                    <option value="+678">🇻🇺 Vanuatu +678</option>
+                                    <option value="+379">🇻🇦 Vatican City +379</option>
+                                    <option value="+58">🇻🇪 Venezuela +58</option>
+                                    <option value="+84">🇻🇳 Vietnam +84</option>
+                                    <option value="+1284">🇻🇬 Virgin Islands (British) +1284</option>
+                                    <option value="+1340">🇻🇮 Virgin Islands (US) +1340</option>
+                                    <option value="+681">🇼🇫 Wallis and Futuna +681</option>
+                                    <option value="+212">🇪🇭 Western Sahara +212</option>
+                                    <option value="+967">🇾🇪 Yemen +967</option>
+                                    <option value="+260">🇿🇲 Zambia +260</option>
+                                    <option value="+263">🇿🇼 Zimbabwe +263</option>
+                                </select>
+                                <input type="tel" id="phone" name="phone" class="phone-input" placeholder="+84-1234567" required>
+                            </div>
+                            <div class="error-message" id="phoneError">Please enter a valid phone number</div>
+                        </div>
+
+                        <div class="form-group alternate-phone-wrapper" id="alternatePhoneWrapper">
+                            <label for="alternatePhone">Alternate Phone Number</label>
+                            <div class="phone-input-wrapper">
+                                <select class="country-select" id="alternateCountryCode">
+                                    <option value="+93">🇦🇫 Afghanistan +93</option>
+                                    <option value="+358">🇦🇽 Åland Islands +358</option>
+                                    <option value="+355">🇦🇱 Albania +355</option>
+                                    <option value="+213">🇩🇿 Algeria +213</option>
+                                    <option value="+1684">🇦🇸 American Samoa +1684</option>
+                                    <option value="+376">🇦🇩 Andorra +376</option>
+                                    <option value="+244">🇦🇴 Angola +244</option>
+                                    <option value="+1264">🇦🇮 Anguilla +1264</option>
+                                    <option value="+672">🇦🇶 Antarctica +672</option>
+                                    <option value="+1268">🇦🇬 Antigua and Barbuda +1268</option>
+                                    <option value="+54">🇦🇷 Argentina +54</option>
+                                    <option value="+374">🇦🇲 Armenia +374</option>
+                                    <option value="+297">🇦🇼 Aruba +297</option>
+                                    <option value="+61">🇦🇺 Australia +61</option>
+                                    <option value="+43">🇦🇹 Austria +43</option>
+                                    <option value="+994">🇦🇿 Azerbaijan +994</option>
+                                    <option value="+1242">🇧🇸 Bahamas +1242</option>
+                                    <option value="+973">🇧🇭 Bahrain +973</option>
+                                    <option value="+880">🇧🇩 Bangladesh +880</option>
+                                    <option value="+1246">🇧🇧 Barbados +1246</option>
+                                    <option value="+375">🇧🇾 Belarus +375</option>
+                                    <option value="+32">🇧🇪 Belgium +32</option>
+                                    <option value="+501">🇧🇿 Belize +501</option>
+                                    <option value="+229">🇧🇯 Benin +229</option>
+                                    <option value="+1441">🇧🇲 Bermuda +1441</option>
+                                    <option value="+975">🇧🇹 Bhutan +975</option>
+                                    <option value="+591">🇧🇴 Bolivia +591</option>
+                                    <option value="+387">🇧🇦 Bosnia and Herzegovina +387</option>
+                                    <option value="+267">🇧🇼 Botswana +267</option>
+                                    <option value="+55">🇧🇷 Brazil +55</option>
+                                    <option value="+246">🇮🇴 British Indian Ocean Territory +246</option>
+                                    <option value="+673">🇧🇳 Brunei +673</option>
+                                    <option value="+359">🇧🇬 Bulgaria +359</option>
+                                    <option value="+226">🇧🇫 Burkina Faso +226</option>
+                                    <option value="+257">🇧🇮 Burundi +257</option>
+                                    <option value="+855">🇰🇭 Cambodia +855</option>
+                                    <option value="+237">🇨🇲 Cameroon +237</option>
+                                    <option value="+1">🇨🇦 Canada +1</option>
+                                    <option value="+238">🇨🇻 Cape Verde +238</option>
+                                    <option value="+1345">🇰🇾 Cayman Islands +1345</option>
+                                    <option value="+236">🇨🇫 Central African Republic +236</option>
+                                    <option value="+235">🇹🇩 Chad +235</option>
+                                    <option value="+56">🇨🇱 Chile +56</option>
+                                    <option value="+86">🇨🇳 China +86</option>
+                                    <option value="+61">🇨🇽 Christmas Island +61</option>
+                                    <option value="+61">🇨🇨 Cocos Islands +61</option>
+                                    <option value="+57">🇨🇴 Colombia +57</option>
+                                    <option value="+269">🇰🇲 Comoros +269</option>
+                                    <option value="+242">🇨🇬 Congo +242</option>
+                                    <option value="+243">🇨🇩 Congo (DRC) +243</option>
+                                    <option value="+682">🇨🇰 Cook Islands +682</option>
+                                    <option value="+506">🇨🇷 Costa Rica +506</option>
+                                    <option value="+225">🇨🇮 Côte d'Ivoire +225</option>
+                                    <option value="+385">🇭🇷 Croatia +385</option>
+                                    <option value="+53">🇨🇺 Cuba +53</option>
+                                    <option value="+599">🇨🇼 Curaçao +599</option>
+                                    <option value="+357">🇨🇾 Cyprus +357</option>
+                                    <option value="+420">🇨🇿 Czech Republic +420</option>
+                                    <option value="+45">🇩🇰 Denmark +45</option>
+                                    <option value="+253">🇩🇯 Djibouti +253</option>
+                                    <option value="+1767">🇩🇲 Dominica +1767</option>
+                                    <option value="+1809">🇩🇴 Dominican Republic +1809</option>
+                                    <option value="+593">🇪🇨 Ecuador +593</option>
+                                    <option value="+20">🇪🇬 Egypt +20</option>
+                                    <option value="+503">🇸🇻 El Salvador +503</option>
+                                    <option value="+240">🇬🇶 Equatorial Guinea +240</option>
+                                    <option value="+291">🇪🇷 Eritrea +291</option>
+                                    <option value="+372">🇪🇪 Estonia +372</option>
+                                    <option value="+251">🇪🇹 Ethiopia +251</option>
+                                    <option value="+500">🇫🇰 Falkland Islands +500</option>
+                                    <option value="+298">🇫🇴 Faroe Islands +298</option>
+                                    <option value="+679">🇫🇯 Fiji +679</option>
+                                    <option value="+358">🇫🇮 Finland +358</option>
+                                    <option value="+33">🇫🇷 France +33</option>
+                                    <option value="+594">🇬🇫 French Guiana +594</option>
+                                    <option value="+689">🇵🇫 French Polynesia +689</option>
+                                    <option value="+241">🇬🇦 Gabon +241</option>
+                                    <option value="+220">🇬🇲 Gambia +220</option>
+                                    <option value="+995">🇬🇪 Georgia +995</option>
+                                    <option value="+49">🇩🇪 Germany +49</option>
+                                    <option value="+233">🇬🇭 Ghana +233</option>
+                                    <option value="+350">🇬🇮 Gibraltar +350</option>
+                                    <option value="+30">🇬🇷 Greece +30</option>
+                                    <option value="+299">🇬🇱 Greenland +299</option>
+                                    <option value="+1473">🇬🇩 Grenada +1473</option>
+                                    <option value="+590">🇬🇵 Guadeloupe +590</option>
+                                    <option value="+1671">🇬🇺 Guam +1671</option>
+                                    <option value="+502">🇬🇹 Guatemala +502</option>
+                                    <option value="+44">🇬🇬 Guernsey +44</option>
+                                    <option value="+224">🇬🇳 Guinea +224</option>
+                                    <option value="+245">🇬🇼 Guinea-Bissau +245</option>
+                                    <option value="+592">🇬🇾 Guyana +592</option>
+                                    <option value="+509">🇭🇹 Haiti +509</option>
+                                    <option value="+504">🇭🇳 Honduras +504</option>
+                                    <option value="+852">🇭🇰 Hong Kong +852</option>
+                                    <option value="+36">🇭🇺 Hungary +36</option>
+                                    <option value="+354">🇮🇸 Iceland +354</option>
+                                    <option value="+91">🇮🇳 India +91</option>
+                                    <option value="+62">🇮🇩 Indonesia +62</option>
+                                    <option value="+98">🇮🇷 Iran +98</option>
+                                    <option value="+964">🇮🇶 Iraq +964</option>
+                                    <option value="+353">🇮🇪 Ireland +353</option>
+                                    <option value="+44">🇮🇲 Isle of Man +44</option>
+                                    <option value="+972">🇮🇱 Israel +972</option>
+                                    <option value="+39">🇮🇹 Italy +39</option>
+                                    <option value="+1876">🇯🇲 Jamaica +1876</option>
+                                    <option value="+81">🇯🇵 Japan +81</option>
+                                    <option value="+44">🇯🇪 Jersey +44</option>
+                                    <option value="+962">🇯🇴 Jordan +962</option>
+                                    <option value="+7">🇰🇿 Kazakhstan +7</option>
+                                    <option value="+254">🇰🇪 Kenya +254</option>
+                                    <option value="+686">🇰🇮 Kiribati +686</option>
+                                    <option value="+383">🇽🇰 Kosovo +383</option>
+                                    <option value="+965">🇰🇼 Kuwait +965</option>
+                                    <option value="+996">🇰🇬 Kyrgyzstan +996</option>
+                                    <option value="+856">🇱🇦 Laos +856</option>
+                                    <option value="+371">🇱🇻 Latvia +371</option>
+                                    <option value="+961">🇱🇧 Lebanon +961</option>
+                                    <option value="+266">🇱🇸 Lesotho +266</option>
+                                    <option value="+231">🇱🇷 Liberia +231</option>
+                                    <option value="+218">🇱🇾 Libya +218</option>
+                                    <option value="+423">🇱🇮 Liechtenstein +423</option>
+                                    <option value="+370">🇱🇹 Lithuania +370</option>
+                                    <option value="+352">🇱🇺 Luxembourg +352</option>
+                                    <option value="+853">🇲🇴 Macau +853</option>
+                                    <option value="+389">🇲🇰 Macedonia +389</option>
+                                    <option value="+261">🇲🇬 Madagascar +261</option>
+                                    <option value="+265">🇲🇼 Malawi +265</option>
+                                    <option value="+60">🇲🇾 Malaysia +60</option>
+                                    <option value="+960">🇲🇻 Maldives +960</option>
+                                    <option value="+223">🇲🇱 Mali +223</option>
+                                    <option value="+356">🇲🇹 Malta +356</option>
+                                    <option value="+692">🇲🇭 Marshall Islands +692</option>
+                                    <option value="+596">🇲🇶 Martinique +596</option>
+                                    <option value="+222">🇲🇷 Mauritania +222</option>
+                                    <option value="+230">🇲🇺 Mauritius +230</option>
+                                    <option value="+262">🇾🇹 Mayotte +262</option>
+                                    <option value="+52">🇲🇽 Mexico +52</option>
+                                    <option value="+691">🇫🇲 Micronesia +691</option>
+                                    <option value="+373">🇲🇩 Moldova +373</option>
+                                    <option value="+377">🇲🇨 Monaco +377</option>
+                                    <option value="+976">🇲🇳 Mongolia +976</option>
+                                    <option value="+382">🇲🇪 Montenegro +382</option>
+                                    <option value="+1664">🇲🇸 Montserrat +1664</option>
+                                    <option value="+212">🇲🇦 Morocco +212</option>
+                                    <option value="+258">🇲🇿 Mozambique +258</option>
+                                    <option value="+95">🇲🇲 Myanmar +95</option>
+                                    <option value="+264">🇳🇦 Namibia +264</option>
+                                    <option value="+674">🇳🇷 Nauru +674</option>
+                                    <option value="+977" selected>🇳🇵 Nepal +977</option>
+                                    <option value="+31">🇳🇱 Netherlands +31</option>
+                                    <option value="+687">🇳🇨 New Caledonia +687</option>
+                                    <option value="+64">🇳🇿 New Zealand +64</option>
+                                    <option value="+505">🇳🇮 Nicaragua +505</option>
+                                    <option value="+227">🇳🇪 Niger +227</option>
+                                    <option value="+234">🇳🇬 Nigeria +234</option>
+                                    <option value="+683">🇳🇺 Niue +683</option>
+                                    <option value="+672">🇳🇫 Norfolk Island +672</option>
+                                    <option value="+850">🇰🇵 North Korea +850</option>
+                                    <option value="+1670">🇲🇵 Northern Mariana Islands +1670</option>
+                                    <option value="+47">🇳🇴 Norway +47</option>
+                                    <option value="+968">🇴🇲 Oman +968</option>
+                                    <option value="+92">🇵🇰 Pakistan +92</option>
+                                    <option value="+680">🇵🇼 Palau +680</option>
+                                    <option value="+970">🇵🇸 Palestine +970</option>
+                                    <option value="+507">🇵🇦 Panama +507</option>
+                                    <option value="+675">🇵🇬 Papua New Guinea +675</option>
+                                    <option value="+595">🇵🇾 Paraguay +595</option>
+                                    <option value="+51">🇵🇪 Peru +51</option>
+                                    <option value="+63">🇵🇭 Philippines +63</option>
+                                    <option value="+48">🇵🇱 Poland +48</option>
+                                    <option value="+351">🇵🇹 Portugal +351</option>
+                                    <option value="+1787">🇵🇷 Puerto Rico +1787</option>
+                                    <option value="+974">🇶🇦 Qatar +974</option>
+                                    <option value="+262">🇷🇪 Réunion +262</option>
+                                    <option value="+40">🇷🇴 Romania +40</option>
+                                    <option value="+7">🇷🇺 Russia +7</option>
+                                    <option value="+250">🇷🇼 Rwanda +250</option>
+                                    <option value="+590">🇧🇱 Saint Barthélemy +590</option>
+                                    <option value="+290">🇸🇭 Saint Helena +290</option>
+                                    <option value="+1869">🇰🇳 Saint Kitts and Nevis +1869</option>
+                                    <option value="+1758">🇱🇨 Saint Lucia +1758</option>
+                                    <option value="+590">🇲🇫 Saint Martin +590</option>
+                                    <option value="+508">🇵🇲 Saint Pierre and Miquelon +508</option>
+                                    <option value="+1784">🇻🇨 Saint Vincent and the Grenadines +1784</option>
+                                    <option value="+685">🇼🇸 Samoa +685</option>
+                                    <option value="+378">🇸🇲 San Marino +378</option>
+                                    <option value="+239">🇸🇹 São Tomé and Príncipe +239</option>
+                                    <option value="+966">🇸🇦 Saudi Arabia +966</option>
+                                    <option value="+221">🇸🇳 Senegal +221</option>
+                                    <option value="+381">🇷🇸 Serbia +381</option>
+                                    <option value="+248">🇸🇨 Seychelles +248</option>
+                                    <option value="+232">🇸🇱 Sierra Leone +232</option>
+                                    <option value="+65">🇸🇬 Singapore +65</option>
+                                    <option value="+1721">🇸🇽 Sint Maarten +1721</option>
+                                    <option value="+421">🇸🇰 Slovakia +421</option>
+                                    <option value="+386">🇸🇮 Slovenia +386</option>
+                                    <option value="+677">🇸🇧 Solomon Islands +677</option>
+                                    <option value="+252">🇸🇴 Somalia +252</option>
+                                    <option value="+27">🇿🇦 South Africa +27</option>
+                                    <option value="+500">🇬🇸 South Georgia +500</option>
+                                    <option value="+82">🇰🇷 South Korea +82</option>
+                                    <option value="+211">🇸🇸 South Sudan +211</option>
+                                    <option value="+34">🇪🇸 Spain +34</option>
+                                    <option value="+94">🇱🇰 Sri Lanka +94</option>
+                                    <option value="+249">🇸🇩 Sudan +249</option>
+                                    <option value="+597">🇸🇷 Suriname +597</option>
+                                    <option value="+47">🇸🇯 Svalbard and Jan Mayen +47</option>
+                                    <option value="+268">🇸🇿 Swaziland +268</option>
+                                    <option value="+46">🇸🇪 Sweden +46</option>
+                                    <option value="+41">🇨🇭 Switzerland +41</option>
+                                    <option value="+963">🇸🇾 Syria +963</option>
+                                    <option value="+886">🇹🇼 Taiwan +886</option>
+                                    <option value="+992">🇹🇯 Tajikistan +992</option>
+                                    <option value="+255">🇹🇿 Tanzania +255</option>
+                                    <option value="+66">🇹🇭 Thailand +66</option>
+                                    <option value="+670">🇹🇱 Timor-Leste +670</option>
+                                    <option value="+228">🇹🇬 Togo +228</option>
+                                    <option value="+690">🇹🇰 Tokelau +690</option>
+                                    <option value="+676">🇹🇴 Tonga +676</option>
+                                    <option value="+1868">🇹🇹 Trinidad and Tobago +1868</option>
+                                    <option value="+216">🇹🇳 Tunisia +216</option>
+                                    <option value="+90">🇹🇷 Turkey +90</option>
+                                    <option value="+993">🇹🇲 Turkmenistan +993</option>
+                                    <option value="+1649">🇹🇨 Turks and Caicos Islands +1649</option>
+                                    <option value="+688">🇹🇻 Tuvalu +688</option>
+                                    <option value="+256">🇺🇬 Uganda +256</option>
+                                    <option value="+380">🇺🇦 Ukraine +380</option>
+                                    <option value="+971">🇦🇪 United Arab Emirates +971</option>
+                                    <option value="+44">🇬🇧 United Kingdom +44</option>
+                                    <option value="+1">🇺🇸 United States +1</option>
+                                    <option value="+598">🇺🇾 Uruguay +598</option>
+                                    <option value="+998">🇺🇿 Uzbekistan +998</option>
+                                    <option value="+678">🇻🇺 Vanuatu +678</option>
+                                    <option value="+379">🇻🇦 Vatican City +379</option>
+                                    <option value="+58">🇻🇪 Venezuela +58</option>
+                                    <option value="+84">🇻🇳 Vietnam +84</option>
+                                    <option value="+1284">🇻🇬 Virgin Islands (British) +1284</option>
+                                    <option value="+1340">🇻🇮 Virgin Islands (US) +1340</option>
+                                    <option value="+681">🇼🇫 Wallis and Futuna +681</option>
+                                    <option value="+212">🇪🇭 Western Sahara +212</option>
+                                    <option value="+967">🇾🇪 Yemen +967</option>
+                                    <option value="+260">🇿🇲 Zambia +260</option>
+                                    <option value="+263">🇿🇼 Zimbabwe +263</option>
+                                </select>
+                                <input type="tel" id="alternatePhone" name="alternatePhone" class="phone-input" placeholder="+84-1234567">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Your Email Address</label>
+                            <input type="email" id="email" name="email" placeholder="Email ID" required>
+                            <div class="error-message" id="emailError">Please enter a valid email</div>
+                        </div>
+
+                        <div class="consent-wrapper">
+                            <input type="checkbox" id="consent" required>
+                            <div class="consent-text">
+                                By submitting this form, you agree to the Terms and Privacy Policy of BizEmirate and consent to BizEmirate collecting your details and contacting you via email, phone, or WhatsApp. Please be aware that due to our 24/7 operations, you may receive a call after 6pm UAE time
+                            </div>
+                        </div>
+
+                        <div class="button-group">
+                            <button type="button" class="btn-next" id="nextBtn">Next</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 2: Business Type -->
+                <div class="step" data-step="2">
+                    <div class="step-left">
+                        <h2>Select your business activity group.</h2>
+                        <p class="step-description">Begin your journey by filling in the details below. Our precise cost calculator ensures you pay only for what your business needs.</p>
+                        <img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=600&h=400&fit=crop" alt="Business professionals" class="step-image">
+                    </div>
+                    
+                    <div class="step-right">
+                        <label class="add-activity-label">Please select your business activity group:</label>
+                        
+                        <div class="activity-pills">
+                            <button type="button" class="activity-pill" data-activity="ecommerce">E-Commerce</button>
+                            <button type="button" class="activity-pill" data-activity="wholesale">Wholesale trade</button>
+                            <button type="button" class="activity-pill" data-activity="marketing">Marketing</button>
+                            <button type="button" class="activity-pill" data-activity="retail">Retail</button>
+                            <button type="button" class="activity-pill" data-activity="logistics">Logistics</button>
+                            <button type="button" class="activity-pill" data-activity="general">General trading</button>
+                            <button type="button" class="activity-pill" data-activity="consultancy">Consultancy</button>
+                        </div>
+
+                        <div class="add-activity-section">
+                            <label class="add-activity-label">Add your activity</label>
+                            <div class="add-activity-input-wrapper">
+                                <input type="text" class="add-activity-input" id="customActivity" placeholder="Activity Name">
+                                <button type="button" class="add-activity-btn" id="addActivityBtn">+</button>
+                            </div>
+                        </div>
+
+                        <div class="custom-activity-section">
+                            <label class="custom-activity-label">Couldn't find what you're looking for ?</label>
+                            <textarea class="custom-activity-textarea" id="customMessage" placeholder="Type in the activity you want, or leave a message."></textarea>
+                        </div>
+
+                        <div class="button-group">
+                            <button type="button" class="btn-prev">Previous</button>
+                            <button type="button" class="btn-next">Next</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Choose the Trade Name -->
+                <div class="step" data-step="3">
+                    <div class="step-left">
+                        <h2>Find the perfect trade name.</h2>
+                        <p class="step-description">Make sure your business name is unique and available with our Name Check feature.</p>
+                        <img src="https://images.unsplash.com/photo-1573164713988-8665fc963095?w=600&h=400&fit=crop" alt="Business meeting" class="step-image">
+                    </div>
+                    
+                    <div class="step-right">
+                        <div class="form-group">
+                            <label for="companyName">Enter your preferred Company Name</label>
+                            <input type="text" id="companyName" name="companyName" placeholder="Type Company Name" required>
+                        </div>
+
+                        <p class="info-text">When you start a business in the United Arab Emirates, it is important to consider what name you want to give your company. Your name is how your customers and clients will identify your business. Therefore, it is important to choose a name that is memorable and reflects the products or services you offer.</p>
+
+                        <div class="button-group">
+                            <button type="button" class="btn-prev">Previous</button>
+                            <button type="button" class="btn-next">Next</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 4: Customize your License -->
+                <div class="step" data-step="4">
+                    <div class="step-left">
+                        <h2>Customize your License.</h2>
+                        <p class="step-description">SPC Free Zone provides a fully customizable one-year license to operate your business in UAE.</p>
+                        <img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=600&h=400&fit=crop" alt="Business professionals" class="step-image">
+                    </div>
+                    
+                    <div class="step-right">
+                        <label class="license-label">Choose any one option:</label>
+                        
+                        <div class="license-options">
+                            <label class="license-option">
+                                <input type="checkbox" name="bankAccount" value="with" data-price="2000">
+                                <div class="license-option-content">
+                                    <span class="license-title">With Bank Account</span>
+                                    <span class="license-price">Adds AED 2,000 extra charge</span>
+                                </div>
+                            </label>
+
+                            <label class="license-option">
+                                <input type="checkbox" name="bankAccount" value="without" data-price="0">
+                                <div class="license-option-content">
+                                    <span class="license-title">Without Bank Account</span>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="button-group">
+                            <button type="button" class="btn-prev">Previous</button>
+                            <button type="button" class="btn-next">Next</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 5: Select number of Visas -->
+                <div class="step" data-step="5">
+                    <div class="step-left">
+                        <h2>Select the number of visas you need.</h2>
+                        <p class="step-description">Whether you need 6 visas or none, you can choose what suits your business needs.</p>
+                        <img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=600&h=400&fit=crop" alt="Business professionals" class="step-image">
+                    </div>
+                    
+                    <div class="step-right">
+                        <label class="visa-label">Select the no. of Visas you need</label>
+                        
+                        <div class="visa-slider-container">
+                            <input type="range" id="visaSlider" min="0" max="6" value="0" step="1" class="visa-slider">
+                            <div class="visa-labels">
+                                <span>0</span>
+                                <span>1</span>
+                                <span>2</span>
+                                <span>3</span>
+                                <span>4</span>
+                                <span>5</span>
+                                <span>6+</span>
+                            </div>
+                        </div>
+
+                        <div class="button-group">
+                            <button type="button" class="btn-prev">Previous</button>
+                            <button type="button" class="btn-next">Next</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 6: Additional Services -->
+                <div class="step" data-step="6">
+                    <div class="step-left">
+                        <h2>Add Additional Services</h2>
+                        <p class="step-description">Would you like to include any of the following optional paid services with your business license?</p>
+                        <img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=600&h=400&fit=crop" alt="Business professionals" class="step-image">
+                    </div>
+                    
+                    <div class="step-right">
+                        <div class="services-list">
+                            <!-- Service 1 -->
+                            <div class="service-item">
+                                <div class="service-header">
+                                    <span class="service-check">✅</span>
+                                    <div class="service-info">
+                                        <h3 class="service-title">Corporate Tax Registration Assistance</h3>
+                                        <p class="service-desc">Get expert help in registering for UAE Corporate Tax. (AED 1200)</p>
+                                    </div>
+                                </div>
+                                <div class="service-buttons">
+                                    <button type="button" class="service-btn" data-service="tax" data-action="include" data-price="1200">
+                                        <input type="checkbox" class="service-checkbox">
+                                        <span>Include</span>
+                                    </button>
+                                    <button type="button" class="service-btn active" data-service="tax" data-action="skip">
+                                        <input type="checkbox" class="service-checkbox" checked>
+                                        <span>Skip</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Service 2 -->
+                            <div class="service-item">
+                                <div class="service-header">
+                                    <span class="service-check">✅</span>
+                                    <div class="service-info">
+                                        <h3 class="service-title">VAT Registration & Filing Support</h3>
+                                        <p class="service-desc">We'll assist you in registering for VAT and staying compliant. (AED 1500)</p>
+                                    </div>
+                                </div>
+                                <div class="service-buttons">
+                                    <button type="button" class="service-btn active" data-service="vat" data-action="include" data-price="1500">
+                                        <input type="checkbox" class="service-checkbox" checked>
+                                        <span>Include</span>
+                                    </button>
+                                    <button type="button" class="service-btn" data-service="vat" data-action="skip">
+                                        <input type="checkbox" class="service-checkbox">
+                                        <span>Skip</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Service 3 -->
+                            <div class="service-item">
+                                <div class="service-header">
+                                    <span class="service-check">✅</span>
+                                    <div class="service-info">
+                                        <h3 class="service-title">Company Stamp Service</h3>
+                                        <p class="service-desc">Receive a custom stamp for official use. (AED 250)</p>
+                                    </div>
+                                </div>
+                                <div class="service-buttons">
+                                    <button type="button" class="service-btn" data-service="stamp" data-action="include" data-price="250">
+                                        <input type="checkbox" class="service-checkbox">
+                                        <span>Include</span>
+                                    </button>
+                                    <button type="button" class="service-btn active" data-service="stamp" data-action="skip">
+                                        <input type="checkbox" class="service-checkbox" checked>
+                                        <span>Skip</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="button-group">
+                            <button type="button" class="btn-prev">Previous</button>
+                            <button type="button" class="btn-next">Next</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 7: Summary -->
+                <div class="step" data-step="7">
+                    <div class="step-fullwidth">
+                        <!-- Progress bar mirrored for step 7 overlay -->
+                        <div class="progress-section" style="margin-bottom: 28px;">
+                            <div class="step-indicator" id="stepIndicator7">Step 7 of 7 - Cost Amount</div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" id="progressBar7" style="width: 100%"></div>
+                            </div>
+                        </div>
+
+                        <!-- License Cost Card -->
+                        <div class="license-cost-card">
+                            <div class="cost-label">LICENSE COST</div>
+                            <div class="cost-amount">AED <span id="licenseCost">0</span></div>
+                            <div class="cost-disclaimer">*Estimated total - subject to verification by SPC Free Zone</div>
+                        </div>
+
+                        <!-- Customer Information Grid -->
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <div class="info-label">Customer Name</div>
+                                <div class="info-value" id="summaryName"></div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Email</div>
+                                <div class="info-value" id="summaryEmail"></div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Phone</div>
+                                <div class="info-value" id="summaryPhone"></div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">No. of Visas</div>
+                                <div class="info-value" id="summaryVisas">0</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Company Name</div>
+                                <div class="info-value" id="summaryCompany"></div>
+                            </div>
+                            <div class="info-item full-width">
+                                <div class="info-label">Selected Activities</div>
+                                <div class="info-value" id="summaryActivities"></div>
+                            </div>
+                        </div>
+
+                        <!-- SPC Plus Add-ons -->
+                        <div class="addons-section">
+                            <div class="addons-header" id="addonsHeader">
+                                <span>SPC Plus Add-ons</span>
+                                <div class="addons-right">
+                                    <span class="addons-cost">AED <span id="addonsCost">0</span></span>
+                                    <button type="button" class="addons-toggle" id="addonsToggle">+</button>
+                                </div>
+                            </div>
+                            <div class="addons-content" id="addonsContent">
+                                <div id="addonsDetails"></div>
+                            </div>
+                        </div>
+
+                        <!-- Grand Total -->
+                        <div class="grand-total">
+                            <span class="grand-label">Grand Total</span>
+                            <span class="grand-amount">AED <span id="grandTotal">0</span></span>
+                        </div>
+
+                        <!-- Features -->
+                        <div class="features-row">
+                            <div class="feature-item">
+                                <span class="feature-icon">🌍</span>
+                                <span class="feature-text">100% Foreign Ownership</span>
+                            </div>
+                            <div class="feature-item">
+                                <span class="feature-icon">⏱️</span>
+                                <span class="feature-text">Setup in 1 Day</span>
+                            </div>
+                            <div class="feature-item">
+                                <span class="feature-icon">💼</span>
+                                <span class="feature-text">2,000+ Business Activities</span>
+                            </div>
+                            <div class="feature-item">
+                                <span class="feature-icon">💳</span>
+                                <span class="feature-text">Flexible Payment Plans</span>
+                            </div>
+                        </div>
+
+                        <!-- Buttons -->
+                        <div class="button-group">
+                            <button type="button" class="btn-prev">Previous</button>
+                            <button type="button" class="btn-submit" id="submitBtn">Submit</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Thank You Modal – outside all overflow containers so fixed centering works -->
+    <div class="thank-you-container" id="thankYouContainer">
+        <div class="thank-you-content">
+            <div class="thank-you-icon">✓</div>
+            <h2 class="thank-you-title">Thank You for Submitting!</h2>
+            <p class="thank-you-message">We have received your business setup request. Our team will reach out to you very soon with a detailed quote and next steps.</p>
+            <div class="thank-you-info">
+                <p>Your estimated cost: <strong>AED <span id="thankYouTotal">0</span></strong></p>
+            </div>
+            <button type="button" class="thank-you-btn" id="thankYouBtn">OK</button>
+        </div>
+    </div>
+
+    <script>
+        // Wait for DOM to be ready (important for WordPress/Elementor)
+        function initCalculator() {
+            console.log('Initializing calculator...');
+            
+            // Scope ALL queries to this specific container to avoid WordPress conflicts
+            const container = document.getElementById('bizCalcContainer');
+            if (!container) { console.error('Container not found!'); return; }
+            
+            // Form state
+            let currentStep = 1;
+            const totalSteps = 7;
+            const formData = {};
+
+            // DOM Elements - scoped to container
+            const form = container.querySelector('#costCalculatorForm');
+            const progressBar = container.querySelector('#progressBar');
+            const stepIndicator = container.querySelector('#stepIndicator');
+            
+            // Get steps scoped to THIS container only
+            function getSteps() {
+                return container.querySelectorAll('.step');
+            }
+            
+            console.log('Found steps:', getSteps().length);
+            console.log('Found form:', !!form);
+            console.log('Found progressBar:', !!progressBar);
+
+            // Step titles
+            const stepTitles = [
+                'Basic Details',
+                'Business Type',
+                'Choose the Trade Name',
+                'Customize your License',
+                'Select number of Visas',
+                'Customize your business license',
+                'Cost Amount'
+            ];
+
+        function setupEventListeners() {
+            // Add event listeners to all Next buttons
+            container.querySelectorAll('.btn-next').forEach(btn => {
+                btn.addEventListener('click', nextStep);
+            });
+
+            // Add event listeners to all Previous buttons
+            container.querySelectorAll('.btn-prev').forEach(btn => {
+                btn.addEventListener('click', prevStep);
+            });
+
+            // Add event listener to submit button
+            container.querySelector('.btn-submit')?.addEventListener('click', submitForm);
+
+            // Add change listeners for radio options
+            container.querySelectorAll('.radio-option').forEach(option => {
+                option.addEventListener('click', function() {
+                    const radio = this.querySelector('input[type="radio"]');
+                    if (radio) {
+                        radio.checked = true;
+                        
+                        // Update selected styling
+                        this.parentElement.querySelectorAll('.radio-option').forEach(opt => {
+                            opt.classList.remove('selected');
+                        });
+                        this.classList.add('selected');
+                    }
+                });
+            });
+
+            // Add change listeners for checkbox options
+            container.querySelectorAll('.checkbox-option').forEach(option => {
+                option.addEventListener('click', function(e) {
+                    if (e.target.tagName !== 'INPUT') {
+                        const checkbox = this.querySelector('input[type="checkbox"]');
+                        if (checkbox) {
+                            checkbox.checked = !checkbox.checked;
+                        }
+                    }
+                    const checkbox = this.querySelector('input[type="checkbox"]');
+                    this.classList.toggle('selected', checkbox.checked);
+                });
+            });
+
+            // Bank account checkboxes (work as radio buttons - only one can be selected)
+            container.querySelectorAll('input[name="bankAccount"]').forEach(checkbox => {
+                checkbox.addEventListener('change', function() {
+                    if (this.checked) {
+                        // Uncheck all other bank account checkboxes
+                        container.querySelectorAll('input[name="bankAccount"]').forEach(cb => {
+                            if (cb !== this) {
+                                cb.checked = false;
+                            }
+                        });
+                    }
+                });
+            });
+
+            // Show alternate phone field when user starts typing their phone number
+            const phoneInput = container.querySelector('#phone');
+            const alternatePhoneWrapper = container.querySelector('#alternatePhoneWrapper');
+            
+            if (phoneInput && alternatePhoneWrapper) {
+                phoneInput.addEventListener('input', function() {
+                    if (this.value.trim().length > 0) {
+                        alternatePhoneWrapper.classList.add('show');
+                    }
+                });
+            }
+
+            // Activity pills selection
+            container.querySelectorAll('.activity-pill').forEach(pill => {
+                pill.addEventListener('click', function() {
+                    // Toggle selection for multi-select
+                    this.classList.toggle('selected');
+                });
+            });
+
+            // Add custom activity button
+            const addActivityBtn = container.querySelector('#addActivityBtn');
+            const customActivityInput = container.querySelector('#customActivity');
+            const activityPillsContainer = container.querySelector('.activity-pills');
+
+            if (addActivityBtn && customActivityInput && activityPillsContainer) {
+                addActivityBtn.addEventListener('click', function() {
+                    const activityName = customActivityInput.value.trim();
+                    if (activityName) {
+                        // Create new pill
+                        const newPill = document.createElement('button');
+                        newPill.type = 'button';
+                        newPill.className = 'activity-pill selected custom';
+                        newPill.setAttribute('data-activity', activityName.toLowerCase().replace(/\s+/g, '-'));
+                        
+                        // Create text node
+                        const textSpan = document.createElement('span');
+                        textSpan.textContent = activityName;
+                        
+                        // Create delete button
+                        const deleteBtn = document.createElement('button');
+                        deleteBtn.type = 'button';
+                        deleteBtn.className = 'delete-activity';
+                        deleteBtn.innerHTML = '×';
+                        deleteBtn.addEventListener('click', function(e) {
+                            e.stopPropagation();
+                            newPill.remove();
+                        });
+                        
+                        newPill.appendChild(textSpan);
+                        newPill.appendChild(deleteBtn);
+                        
+                        // Add click handler for selection toggle
+                        newPill.addEventListener('click', function(e) {
+                            if (e.target !== deleteBtn) {
+                                this.classList.toggle('selected');
+                            }
+                        });
+                        
+                        // Add to container
+                        activityPillsContainer.appendChild(newPill);
+                        
+                        // Clear input
+                        customActivityInput.value = '';
+                    }
+                });
+
+                // Also allow adding on Enter key
+                customActivityInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        addActivityBtn.click();
+                    }
+                });
+            }
+
+            // Service Include/Skip buttons
+            container.querySelectorAll('.service-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const service = this.dataset.service;
+                    const action = this.dataset.action;
+                    
+                    // Remove active from all buttons in this service group and uncheck their checkboxes
+                    container.querySelectorAll(`[data-service="${service}"]`).forEach(b => {
+                        b.classList.remove('active');
+                        const checkbox = b.querySelector('.service-checkbox');
+                        if (checkbox) {
+                            checkbox.checked = false;
+                        }
+                    });
+                    
+                    // Add active to clicked button and check its checkbox
+                    this.classList.add('active');
+                    const checkbox = this.querySelector('.service-checkbox');
+                    if (checkbox) {
+                        checkbox.checked = true;
+                    }
+                });
+            });
+
+            // Add-ons toggle
+            const addonsToggle = container.querySelector('#addonsToggle');
+            const addonsContent = container.querySelector('#addonsContent');
+            const addonsHeader = container.querySelector('#addonsHeader');
+            
+            if (addonsToggle && addonsContent) {
+                addonsHeader.addEventListener('click', function() {
+                    addonsToggle.classList.toggle('expanded');
+                    addonsContent.classList.toggle('expanded');
+                });
+            }
+
+            // Thank You OK button
+            const thankYouBtn = document.getElementById('thankYouBtn');
+            const thankYouContainer = document.getElementById('thankYouContainer');
+
+            function resetToStep1() {
+                thankYouContainer.classList.remove('show');
+                const steps = getSteps();
+                steps.forEach(s => s.classList.remove('active'));
+                document.body.style.overflow = '';
+                currentStep = 1;
+                steps[0].classList.add('active');
+                updateProgress();
+                container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            
+            if (thankYouBtn) {
+                thankYouBtn.addEventListener('click', resetToStep1);
+            }
+            
+            // Close popup when clicking outside
+            if (thankYouContainer) {
+                thankYouContainer.addEventListener('click', function(e) {
+                    if (e.target === thankYouContainer) {
+                        resetToStep1();
+                    }
+                });
+            }
+        }
+
+        function validateStep(step) {
+            switch(step) {
+                case 1:
+                    const fullName = container.querySelector('#fullName').value.trim();
+                    const email = container.querySelector('#email').value.trim();
+                    const phone = container.querySelector('#phone').value.trim();
+                    const consent = container.querySelector('#consent').checked;
+                    
+                    let isValid = true;
+                    
+                    if (!fullName) {
+                        showError('fullNameError');
+                        isValid = false;
+                    } else {
+                        hideError('fullNameError');
+                    }
+                    
+                    if (!email || !isValidEmail(email)) {
+                        showError('emailError');
+                        isValid = false;
+                    } else {
+                        hideError('emailError');
+                    }
+                    
+                    if (!phone) {
+                        showError('phoneError');
+                        isValid = false;
+                    } else {
+                        hideError('phoneError');
+                    }
+                    
+                    if (!consent) {
+                        alert('Please accept the terms and privacy policy');
+                        isValid = false;
+                    }
+                    
+                    if (isValid) {
+                        const countryCode = container.querySelector('#countryCode').value;
+                        const alternatePhone = container.querySelector('#alternatePhone').value.trim();
+                        const alternateCountryCode = container.querySelector('#alternateCountryCode').value;
+                        
+                        formData.fullName = fullName;
+                        formData.email = email;
+                        formData.phone = countryCode + ' ' + phone;
+                        
+                        // Add alternate phone if provided
+                        if (alternatePhone) {
+                            formData.alternatePhone = alternateCountryCode + ' ' + alternatePhone;
+                        }
+                    }
+                    
+                    return isValid;
+                    
+                case 2:
+                    const selectedActivities = container.querySelectorAll('.activity-pill.selected');
+                    const customMessage = container.querySelector('#customMessage').value.trim();
+                    
+                    if (selectedActivities.length === 0 && !customMessage) {
+                        alert('Please select at least one business activity or leave a message');
+                        return false;
+                    }
+                    
+                    // Save selected activities
+                    formData.businessActivities = [];
+                    selectedActivities.forEach(pill => {
+                        formData.businessActivities.push(pill.textContent);
+                    });
+                    
+                    // Save custom message if provided
+                    if (customMessage) {
+                        formData.customActivityMessage = customMessage;
+                    }
+                    
+                    return true;
+                    
+                case 3:
+                    const companyName = container.querySelector('#companyName').value.trim();
+                    if (!companyName) {
+                        alert('Please enter your preferred company name');
+                        return false;
+                    }
+                    formData.companyName = companyName;
+                    return true;
+                    
+                case 4:
+                    const bankAccount = container.querySelector('input[name="bankAccount"]:checked');
+                    if (!bankAccount) {
+                        alert('Please select a license option');
+                        return false;
+                    }
+                    formData.bankAccount = bankAccount.value;
+                    formData.bankAccountPrice = parseInt(bankAccount.dataset.price);
+                    return true;
+                    
+                case 5:
+                    const visaSlider = container.querySelector('#visaSlider');
+                    if (!visaSlider) {
+                        return false;
+                    }
+                    const visaCount = parseInt(visaSlider.value);
+                    formData.visaCount = visaCount;
+                    
+                    // Calculate price: $1000 per visa
+                    formData.visaPrice = visaCount * 1000;
+                    
+                    return true;
+                    
+                case 6:
+                    // Collect selected services (those with "include" active)
+                    formData.additionalServices = [];
+                    formData.additionalServicesPrice = 0;
+                    
+                    const includeButtons = container.querySelectorAll('.service-btn[data-action="include"].active');
+                    includeButtons.forEach(btn => {
+                        const serviceName = btn.dataset.service;
+                        const price = parseInt(btn.dataset.price);
+                        
+                        formData.additionalServices.push({
+                            name: serviceName,
+                            price: price
+                        });
+                        formData.additionalServicesPrice += price;
+                    });
+                    return true;
+                    
+                default:
+                    return true;
+            }
+        }
+
+        function nextStep() {
+            console.log('Next button clicked, current step:', currentStep);
+            if (!validateStep(currentStep)) {
+                return;
+            }
+            console.log('Validation passed');
+            
+            if (currentStep < totalSteps) {
+                const steps = getSteps();
+                console.log('Moving from step', currentStep, 'to step', currentStep + 1);
+                console.log('Total steps found:', steps.length);
+                
+                if (steps[currentStep - 1]) {
+                    steps[currentStep - 1].classList.remove('active');
+                }
+                currentStep++;
+                if (steps[currentStep - 1]) {
+                    steps[currentStep - 1].classList.add('active');
+                    console.log('Step', currentStep, 'is now active');
+                }
+                
+                if (currentStep === totalSteps) {
+                    updateSummary();
+                    // Lock page scroll – the overlay handles its own scrolling
+                    document.body.style.overflow = 'hidden';
+                    // Scroll the results overlay to the top
+                    const step7El = steps[currentStep - 1];
+                    if (step7El) step7El.scrollTop = 0;
+                } else {
+                    // Scroll to calculator container (not page top)
+                    container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+                
+                updateProgress();
+            }
+        }
+
+        function prevStep() {
+            if (currentStep > 1) {
+                const steps = getSteps();
+                if (steps[currentStep - 1]) {
+                    steps[currentStep - 1].classList.remove('active');
+                }
+                // Restore page scroll if leaving step 7
+                if (currentStep === totalSteps) {
+                    document.body.style.overflow = '';
+                }
+                currentStep--;
+                if (steps[currentStep - 1]) {
+                    steps[currentStep - 1].classList.add('active');
+                }
+                updateProgress();
+                container.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+
+        function updateProgress() {
+            const progress = (currentStep / totalSteps) * 100;
+            progressBar.style.width = progress + '%';
+            stepIndicator.textContent = `Step ${currentStep} of ${totalSteps} - ${stepTitles[currentStep - 1]}`;
+            // Keep step 7's mirrored progress bar in sync
+            const pb7 = document.getElementById('progressBar7');
+            const si7 = document.getElementById('stepIndicator7');
+            if (pb7) pb7.style.width = progress + '%';
+            if (si7) si7.textContent = `Step ${currentStep} of ${totalSteps} - ${stepTitles[currentStep - 1]}`;
+        }
+
+        function updateSummary() {
+            // Calculate license cost (base cost without add-ons)
+            const licenseCost = (formData.bankAccountPrice || 0) + (formData.visaPrice || 0);
+            
+            // Calculate add-ons cost (only from selected additional services)
+            const addonsCost = formData.additionalServicesPrice || 0;
+            
+            // Calculate grand total
+            const grandTotal = licenseCost + addonsCost;
+            
+            // Update license cost display
+            container.querySelector('#licenseCost').textContent = licenseCost.toLocaleString();
+            
+            // Update add-ons cost display (this should match the subtotal)
+            container.querySelector('#addonsCost').textContent = addonsCost.toLocaleString();
+            
+            // Update grand total display
+            container.querySelector('#grandTotal').textContent = grandTotal.toLocaleString();
+            
+            // Update personal info
+            container.querySelector('#summaryName').textContent = formData.fullName || '';
+            container.querySelector('#summaryEmail').textContent = formData.email || '';
+            container.querySelector('#summaryPhone').textContent = formData.phone || '';
+            
+            // Update visas
+            const visaCount = formData.visaCount !== undefined ? formData.visaCount : 0;
+            const visaText = visaCount === 6 ? '6+' : visaCount.toString();
+            container.querySelector('#summaryVisas').textContent = visaText;
+            
+            // Update company name
+            container.querySelector('#summaryCompany').textContent = formData.companyName || '';
+            
+            // Update selected activities
+            const summaryActivitiesEl = container.querySelector('#summaryActivities');
+            if (formData.businessActivities && formData.businessActivities.length > 0) {
+                let activitiesHTML = '<div class="summary-activity-pills">';
+                formData.businessActivities.forEach(activity => {
+                    activitiesHTML += `<span class="summary-activity-pill">${activity}</span>`;
+                });
+                activitiesHTML += '</div>';
+                summaryActivitiesEl.innerHTML = activitiesHTML;
+            } else {
+                summaryActivitiesEl.textContent = 'None';
+            }
+            
+            // Build add-ons details - show only selected services
+            const addonsDetails = container.querySelector('#addonsDetails');
+            let addonsHTML = '';
+            
+            // Only show services that were selected (Include clicked)
+            if (formData.additionalServices && formData.additionalServices.length > 0) {
+                const serviceNames = {
+                    'tax': 'Corporate Tax Registration',
+                    'vat': 'VAT Registration',
+                    'stamp': 'Company Stamp'
+                };
+                
+                formData.additionalServices.forEach(service => {
+                    const serviceName = serviceNames[service.name] || service.name;
+                    addonsHTML += `
+                        <div class="addon-item">
+                            <span class="addon-name">${serviceName}</span>
+                            <span class="addon-price">AED ${service.price.toLocaleString()}</span>
+                        </div>
+                    `;
+                });
+                
+                // Add subtotal row
+                const subtotal = formData.additionalServicesPrice || 0;
+                addonsHTML += `
+                    <div class="addon-subtotal">
+                        <span class="addon-name">SPC+ Subtotal</span>
+                        <span class="addon-price">AED ${subtotal.toLocaleString()}</span>
+                    </div>
+                `;
+            } else {
+                addonsHTML = '<div class="addon-item"><span class="addon-name">No add-ons selected</span></div>';
+            }
+            
+            addonsDetails.innerHTML = addonsHTML;
+        }
+
+        function createSummaryItem(label, price) {
+            return `
+                <div class="summary-item">
+                    <span class="summary-label">${label}:</span>
+                    <span class="summary-value">$${price.toLocaleString()}</span>
+                </div>
+            `;
+        }
+
+        function formatLabel(text) {
+            // Convert camelCase or lowercase to Title Case
+            const formatted = text.replace(/([A-Z])/g, ' $1').trim();
+            return formatted.charAt(0).toUpperCase() + formatted.slice(1);
+        }
+
+        function submitForm(e) {
+            e.preventDefault();
+            
+            // Calculate total for thank you page
+            const licenseCost = (formData.bankAccountPrice || 0) + (formData.visaPrice || 0);
+            const addonsCost = formData.additionalServicesPrice || 0;
+            const grandTotal = licenseCost + addonsCost;
+            
+            // Update thank you total
+            document.getElementById('thankYouTotal').textContent = grandTotal.toLocaleString();
+            
+            // Prepare email template parameters
+            const emailParams = {
+                customer_name: formData.fullName || '',
+                customer_email: formData.email || '',
+                customer_phone: formData.phone || '',
+                alternate_phone: formData.alternatePhone || 'N/A',
+                company_name: formData.companyName || '',
+                business_activities: formData.businessActivities ? formData.businessActivities.join(', ') : 'None',
+                custom_activity: formData.customActivityMessage || 'N/A',
+                bank_account: formData.bankAccount === 'with' ? 'With Bank Account' : 'Without Bank Account',
+                visa_count: formData.visaCount === 6 ? '6+' : (formData.visaCount || 0),
+                license_cost: licenseCost.toLocaleString(),
+                addons_cost: addonsCost.toLocaleString(),
+                grand_total: grandTotal.toLocaleString(),
+                submission_date: new Date().toLocaleString(),
+                // Format additional services
+                additional_services: formData.additionalServices && formData.additionalServices.length > 0 
+                    ? formData.additionalServices.map(s => {
+                        const names = {
+                            'tax': 'Corporate Tax Registration',
+                            'vat': 'VAT Registration',
+                            'stamp': 'Company Stamp'
+                        };
+                        return `${names[s.name] || s.name}: AED ${s.price.toLocaleString()}`;
+                    }).join(', ')
+                    : 'None selected'
+            };
+            
+            // Show thank you modal immediately
+            document.getElementById('thankYouContainer').classList.add('show');
+
+            // Send email in the background
+            try {
+                emailjs.send('service_8ivl27h', 'template_k8f6s3f', emailParams)
+                    .then(function(response) {
+                        console.log('Email sent successfully!', response.status, response.text);
+                    }, function(error) {
+                        console.error('Failed to send email:', error);
+                    });
+            } catch(err) {
+                console.error('EmailJS error:', err);
+            }
+        }
+
+        function showError(elementId) {
+            const element = container.querySelector('#' + elementId);
+            if (element) {
+                element.style.display = 'block';
+            }
+        }
+
+        function hideError(elementId) {
+            const element = container.querySelector('#' + elementId);
+            if (element) {
+                element.style.display = 'none';
+            }
+        }
+
+        function isValidEmail(email) {
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }
+        
+        // Initialize after all functions are defined
+        updateProgress();
+        setupEventListeners();
+        
+        } // End of initCalculator function
+
+        // Initialize when DOM is ready - with retry for WordPress/Elementor
+        let initAttempts = 0;
+        const maxAttempts = 50; // 5 seconds max (50 * 100ms)
+        
+        function tryInitialize() {
+            const form = document.getElementById('costCalculatorForm');
+            const steps = document.querySelectorAll('.step');
+            
+            console.log('Try initialize attempt', initAttempts + 1, '- Form:', !!form, 'Steps:', steps.length);
+            
+            // Check if elements exist before initializing
+            if (form && steps.length >= 7) {
+                console.log('All elements found, initializing calculator!');
+                initCalculator();
+            } else if (initAttempts < maxAttempts) {
+                initAttempts++;
+                // Retry after a short delay (for WordPress/Elementor widget injection)
+                setTimeout(tryInitialize, 100);
+            } else {
+                console.error('Failed to initialize calculator after', maxAttempts, 'attempts. Elements found - Form:', !!form, 'Steps:', steps.length);
+            }
+        }
+
+        // Start initialization
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', tryInitialize);
+        } else {
+            tryInitialize();
+        }
+    </script>

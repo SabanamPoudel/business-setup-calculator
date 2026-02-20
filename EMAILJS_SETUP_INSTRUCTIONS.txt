@@ -1,0 +1,104 @@
+EmailJS Setup Instructions for Business Setup Cost Calculator
+================================================================
+
+You've successfully integrated EmailJS into your calculator! Follow these steps to complete the setup:
+
+STEP 1: Get Your EmailJS Credentials
+-------------------------------------
+1. Go to https://www.emailjs.com/
+2. Log in with your account (info@bizemirate.com)
+3. Go to "Email Services" and note your Service ID
+4. Go to "Email Templates" and create a new template (or note existing template ID)
+5. Go to "Account" > "General" and copy your Public Key
+
+
+STEP 2: Create an Email Template
+---------------------------------
+In your EmailJS dashboard, create a template with these variables:
+
+Template Content Example:
+-------------------------
+Subject: New Business Setup Quote Request - {{customer_name}}
+
+Dear Team,
+
+You have received a new business setup cost calculator submission.
+
+CUSTOMER INFORMATION:
+- Name: {{customer_name}}
+- Email: {{customer_email}}
+- Phone: {{customer_phone}}
+- Alternate Phone: {{alternate_phone}}
+
+BUSINESS DETAILS:
+- Company Name: {{company_name}}
+- Business Activities: {{business_activities}}
+- Custom Activity Request: {{custom_activity}}
+
+LICENSE CONFIGURATION:
+- Bank Account: {{bank_account}}
+- Number of Visas: {{visa_count}}
+
+ADDITIONAL SERVICES:
+{{additional_services}}
+
+COST SUMMARY:
+- License Cost: ₿ {{license_cost}}
+- Additional Services: ₿ {{addons_cost}}
+- Grand Total: ₿ {{grand_total}}
+
+Submission Date: {{submission_date}}
+
+Best regards,
+Biz Limited Cost Calculator
+
+
+STEP 3: Update the HTML File
+-----------------------------
+Open index.html and find these two lines:
+
+Line ~1217:
+    publicKey: "YOUR_PUBLIC_KEY", 
+Replace "YOUR_PUBLIC_KEY" with your actual EmailJS Public Key
+
+Line ~2621:
+    emailjs.send('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', emailParams)
+Replace:
+- 'YOUR_SERVICE_ID' with your EmailJS Service ID
+- 'YOUR_TEMPLATE_ID' with your EmailJS Template ID
+
+
+STEP 4: Configure Email Service
+--------------------------------
+In EmailJS dashboard:
+1. Add an email service (Gmail, Outlook, etc.) connected to info@bizemirate.com
+2. Make sure the service is active
+3. Test the connection
+
+
+STEP 5: Test the Form
+----------------------
+1. Open the calculator in your browser
+2. Fill out all 7 steps
+3. Click Submit
+4. Check info@bizemirate.com inbox for the email
+5. Verify all data is received correctly
+
+
+EXAMPLE VALUES (Replace with your actual values):
+--------------------------------------------------
+publicKey: "abcd1234efgh5678"
+Service ID: "service_xyz123"
+Template ID: "template_abc456"
+
+
+TROUBLESHOOTING:
+----------------
+- If emails don't send, check browser console for errors
+- Verify all three credentials are correct
+- Check EmailJS dashboard for usage limits
+- Make sure the email service is connected to info@bizemirate.com
+- EmailJS free plan allows 200 emails/month
+
+
+For more help, visit: https://www.emailjs.com/docs/
